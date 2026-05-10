@@ -4,6 +4,108 @@ import { useState, useRef } from 'react'
 import './App.css'
 import { generateContentFromText } from './services/groqApi'
 
+// Komponenti për Summary View
+function SummaryView({ summary, onCopy }) {
+  return (
+    <div className="summary-view">
+      <div className="view-header">
+        <h2>{summary.title}</h2>
+        <button onClick={() => onCopy(summary.fullSummary, 'Summary')} className="copy-btn">
+          📋 Kopjo Summary
+        </button>
+      </div>
+      <div className="key-points">
+        <h3>📌 Pikat Kryesore:</h3>
+        <ul>
+          {summary.keyPoints?.map((point, i) => (
+            <li key={i}>{point}</li>
+          ))}
+        </ul>
+      </div>
+      <div className="full-summary">
+        <h3>📖 Përmbledhja e Plotë:</h3>
+        <p>{summary.fullSummary}</p>
+      </div>
+    </div>
+  )
+}
+
+// Komponenti për Quiz View
+function QuizView({ quiz, onCopy }) {
+  return (
+    <div className="quiz-view">
+      <div className="view-header">
+        <h2>📋 Quiz - Testo Veten!</h2>
+        <button onClick={() => onCopy(JSON.stringify(quiz, null, 2), 'Quiz')} className="copy-btn">
+          📋 Kopjo Quiz
+        </button>
+      </div>
+      {quiz.questions?.map((q, idx) => (
+        <div key={idx} className="quiz-question">
+          <p className="question-text">
+            <strong>{idx + 1}. {q.question}</strong>
+          </p>
+          <div className="options">
+            {q.options?.map((opt, optIdx) => (
+              <label key={optIdx} className="option">
+                <input type="radio" name={`q${idx}`} value={opt} />
+                {opt}
+              </label>
+            ))}
+          </div>
+          <details className="answer-hint">
+            <summary>🔍 Shiko përgjigjen</summary>
+            <p><strong>Përgjigja e saktë:</strong> {q.correctAnswer}</p>
+            <p><strong>Shpjegimi:</strong> {q.explanation}</p>
+          </details>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Komponenti për Escape Room View
+function EscapeRoomView({ escapeRoom, onCopy }) {
+  return (
+    <div className="escape-view">
+      <div className="view-header">
+        <h2>🎮 {escapeRoom.theme}</h2>
+        <button onClick={() => onCopy(escapeRoom.backstory, 'Escape Room Story')} className="copy-btn">
+          📋 Kopjo Story
+        </button>
+      </div>
+      <p className="backstory">{escapeRoom.backstory}</p>
+      <div className="puzzles">
+        <h3>🔐 Zgjidh enigmat për të shpëtuar:</h3>
+        {escapeRoom.puzzles?.map((puzzle, idx) => (
+          <div key={idx} className="puzzle">
+            <p className="puzzle-question">
+              <strong>Enigma {idx + 1}:</strong> {puzzle.question}
+            </p>
+            <div className="puzzle-options">
+              {puzzle.options?.map((opt, optIdx) => (
+                <label key={optIdx} className="puzzle-option">
+                  <input type="radio" name={`puzzle${idx}`} value={opt} />
+                  {opt}
+                </label>
+              ))}
+            </div>
+            <details className="puzzle-answer">
+              <summary>🔑 Shiko përgjigjen</summary>
+              <p><strong>Përgjigja e saktë:</strong> {puzzle.correctAnswer}</p>
+            </details>
+          </div>
+        ))}
+      </div>
+      {escapeRoom.successMessage && (
+        <div className="success-message">
+          🎉 {escapeRoom.successMessage}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function App() {
   const [inputText, setInputText] = useState('')
   const [summary, setSummary] = useState(null)
@@ -13,6 +115,7 @@ function App() {
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState('summary')
   const [charCount, setCharCount] = useState(0)
+  const [copiedMessage, setCopiedMessage] = useState('')
   
   // Për të parandaluar double submit
   const isSubmitting = useRef(false)
@@ -33,6 +136,12 @@ function App() {
     return text.slice(0, maxLength) + '\n\n[...Teksti është prerë për shkak të gjatësisë...]'
   }
 
+  const copyToClipboard = (text, type) => {
+    navigator.clipboard.writeText(text)
+    setCopiedMessage(`✅ ${type} u kopjua në clipboard!`)
+    setTimeout(() => setCopiedMessage(''), 2000)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -45,7 +154,6 @@ function App() {
     // ========== EDGE CASE 2: INPUT SHUMË I GJATË ==========
     if (inputText.length > MAX_CHARS) {
       setError(`⚠️ Teksti është shumë i gjatë (${inputText.length} karaktere). Maksimumi është ${MAX_CHARS} karaktere. Teksti do të pritet automatikisht.`)
-      // Nuk kthehemi - vazhdojmë me tekstin e prerë
     }
     
     // ========== EDGE CASE 3: PARANDALO DOUBLE SUBMIT ==========
@@ -66,18 +174,7 @@ function App() {
     const textToSend = truncateText(inputText, MAX_CHARS)
 
     try {
-      // ========== EDGE CASE 4: SIMULO API FAILURE PËR TEST ==========
-      // Nëse teksti përmban "test error", simulojmë gabim API
-      if (textToSend.toLowerCase().includes('test error')) {
-        throw new Error('Simulated API failure for testing')
-      }
-      
       const result = await generateContentFromText(textToSend)
-      
-      // Verifikojmë që rezultati ka strukturën e duhur
-      if (!result || !result.summary || !result.quiz || !result.escapeRoom) {
-        throw new Error('Përgjigjja nga AI nuk ka formatin e duhur.')
-      }
       
       setSummary(result.summary)
       setQuiz(result.quiz)
@@ -87,7 +184,6 @@ function App() {
       // ========== EDGE CASE 4: API FAILURE / NETWORK ERROR ==========
       console.error('API Error:', err)
       
-      // Diagnostikojmë llojin e gabimit
       if (err.message.includes('NetworkError') || err.message.includes('fetch')) {
         setError('🌐 Gabim lidhjeje! Kontrolloni internetin tuaj dhe provoni përsëri.')
       } else if (err.message.includes('429') || err.message.includes('rate')) {
@@ -95,7 +191,7 @@ function App() {
       } else if (err.message.includes('API key') || err.message.includes('401') || err.message.includes('403')) {
         setError('🔑 Problem me autentifikimin e API. Kontaktoni mbështetjen.')
       } else if (err.message.includes('timed out') || err.message.includes('timeout')) {
-        setError('⏰ Kërkesa zgjati shumë. Serveri nuk përgjigjet. Provoni përsëri me një tekst më të shkurtër.')
+        setError('⏰ Kërkesa zgjati shumë. Provoni përsëri me një tekst më të shkurtër.')
       } else {
         setError(`❌ ${err.message || 'Ndodhi një gabim. Ju lutem provoni përsëri.'}`)
       }
@@ -112,6 +208,7 @@ function App() {
     setSummary(null)
     setQuiz(null)
     setEscapeRoom(null)
+    setCopiedMessage('')
   }
 
   return (
@@ -168,6 +265,13 @@ function App() {
             </div>
           )}
 
+          {/* Copy Success Message */}
+          {copiedMessage && (
+            <div className="copy-success">
+              <span>📋</span> {copiedMessage}
+            </div>
+          )}
+
           {/* Error State */}
           {error && !isLoading && (
             <div className="error-state">
@@ -218,83 +322,15 @@ function App() {
               </div>
 
               {activeTab === 'summary' && summary && (
-                <div className="summary-view">
-                  <h2>{summary.title || 'Përmbledhje'}</h2>
-                  <div className="key-points">
-                    <h3>📌 Pikat Kryesore:</h3>
-                    <ul>
-                      {summary.keyPoints?.map((point, i) => (
-                        <li key={i}>{point}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="full-summary">
-                    <h3>📖 Përmbledhja e Plotë:</h3>
-                    <p>{summary.fullSummary}</p>
-                  </div>
-                </div>
+                <SummaryView summary={summary} onCopy={copyToClipboard} />
               )}
 
               {activeTab === 'quiz' && quiz && (
-                <div className="quiz-view">
-                  <h2>📋 Quiz - Testo Veten!</h2>
-                  {quiz.questions?.map((q, idx) => (
-                    <div key={idx} className="quiz-question">
-                      <p className="question-text">
-                        <strong>{idx + 1}. {q.question}</strong>
-                      </p>
-                      <div className="options">
-                        {q.options?.map((opt, optIdx) => (
-                          <label key={optIdx} className="option">
-                            <input type="radio" name={`q${idx}`} value={opt} />
-                            {opt}
-                          </label>
-                        ))}
-                      </div>
-                      <details className="answer-hint">
-                        <summary>🔍 Shiko përgjigjen</summary>
-                        <p><strong>Përgjigja e saktë:</strong> {q.correctAnswer}</p>
-                        <p><strong>Shpjegimi:</strong> {q.explanation}</p>
-                      </details>
-                    </div>
-                  ))}
-                </div>
+                <QuizView quiz={quiz} onCopy={copyToClipboard} />
               )}
 
               {activeTab === 'escape' && escapeRoom && (
-                <div className="escape-view">
-                  <div className="escape-header">
-                    <h2>🎮 {escapeRoom.theme || 'Escape Room'}</h2>
-                    <p className="backstory">{escapeRoom.backstory}</p>
-                  </div>
-                  <div className="puzzles">
-                    <h3>🔐 Zgjidh enigmat për të shpëtuar:</h3>
-                    {escapeRoom.puzzles?.map((puzzle, idx) => (
-                      <div key={idx} className="puzzle">
-                        <p className="puzzle-question">
-                          <strong>Enigma {idx + 1}:</strong> {puzzle.question}
-                        </p>
-                        <div className="puzzle-options">
-                          {puzzle.options?.map((opt, optIdx) => (
-                            <label key={optIdx} className="puzzle-option">
-                              <input type="radio" name={`puzzle${idx}`} value={opt} />
-                              {opt}
-                            </label>
-                          ))}
-                        </div>
-                        <details className="puzzle-answer">
-                          <summary>🔑 Shiko përgjigjen</summary>
-                          <p><strong>Përgjigja e saktë:</strong> {puzzle.correctAnswer}</p>
-                        </details>
-                      </div>
-                    ))}
-                  </div>
-                  {escapeRoom.successMessage && (
-                    <div className="success-message">
-                      🎉 {escapeRoom.successMessage}
-                    </div>
-                  )}
-                </div>
+                <EscapeRoomView escapeRoom={escapeRoom} onCopy={copyToClipboard} />
               )}
             </div>
           )}
@@ -310,7 +346,7 @@ function App() {
         </div>
 
         <div className="footer">
-          <p>Powered by Groq AI | 3+ Edge Cases Protected | No Crashes Guaranteed</p>
+          <p>Powered by Groq AI | 4+ Edge Cases Protected | Copy to Clipboard | No Crashes</p>
         </div>
       </div>
     </div>

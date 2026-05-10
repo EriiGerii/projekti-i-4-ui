@@ -1,34 +1,32 @@
-# AI Study Assistant
+# AI Study Assistant Pro
 
-Një aplikacion web që përdor AI për të gjeneruar **summary**, **quiz** dhe **escape room game** nga çdo tekst që ngjit përdoruesi.
+## 📌 Statusi i Projektit: ✅ STABIL DHE FUNKSIONAL
 
-## Linku Live
+Një aplikacion web që përdor AI (Groq) për të gjeneruar përmbledhje, kuize dhe lojëra arratisjeje nga çdo tekst.
 
-(Linku do të shtohet pas deploy-it në Vercel)
+## 🚀 Live Demo
+[https://projekti-i-4-ui.vercel.app](https://projekti-i-4-ui.vercel.app)
 
-## Teknologjitë
+## 📂 Repository
+[https://github.com/EriiGerii/projekti-i-4-ui](https://github.com/EriiGerii/projekti-i-4-ui)
 
-- **Frontend:** React + Vite
-- **AI API:** Groq (llama-3.1-8b-instant)
-- **Styling:** CSS moderne (gradient, responsive)
+## 🛠️ Teknologjitë
+- React 18 + Vite
+- Groq API (llama-3.1-8b-instant)
+- CSS modern (gradient, responsive)
 
-## Funksionalitetet
+## ✅ Funksionalitetet
+- [x] Input form me validim
+- [x] Loading state (spinner + button disabled)
+- [x] Error handling për çdo skenar
+- [x] 4+ edge cases të trajtuara
+- [x] Copy to clipboard
+- [x] Komponentë të ndarë (refaktoruar)
 
-- ✅ Ngjit tekst dhe merr një përmbledhje të shkurtër
-- ✅ Gjenero 5 pyetje me zgjedhje (multiple choice quiz)
-- ✅ Luaj "Escape Room" me 3 enigma bazuar në tekst
-- ✅ Loading state dhe error handling
-
-## Si të përdoret
-
-1. Ngjisni tekstin tuaj në fushën e madhe
-2. Klikoni butonin "✨ Gjenero"
-3. Shfletoni rezultatet përmes 3 skedave: Summary, Quiz, Escape Room
-
-## Instalimi lokal
-
+## 🔧 Instalimi lokal
 ```bash
 git clone https://github.com/EriiGerii/projekti-i-4-ui.git
 cd projekti-i-4-ui
 npm install
+# Krijo .env.local dhe shto VITE_GROQ_API_KEY
 npm run dev
