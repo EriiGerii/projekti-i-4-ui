@@ -1,4 +1,5 @@
 // src/App.jsx
+// AI Study Assistant - Projekti i 4 UI: Summary, Quiz dhe Escape Room Game
 
 import { useState } from 'react'
 import './App.css'
