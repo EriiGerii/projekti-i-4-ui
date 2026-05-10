@@ -1,16 +1,34 @@
-# React + Vite
+# AI Study Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Një aplikacion web që përdor AI për të gjeneruar **summary**, **quiz** dhe **escape room game** nga çdo tekst që ngjit përdoruesi.
 
-Currently, two official plugins are available:
+## Linku Live
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+(Linku do të shtohet pas deploy-it në Vercel)
 
-## React Compiler
+## Teknologjitë
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend:** React + Vite
+- **AI API:** Groq (llama-3.1-8b-instant)
+- **Styling:** CSS moderne (gradient, responsive)
 
-## Expanding the ESLint configuration
+## Funksionalitetet
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- ✅ Ngjit tekst dhe merr një përmbledhje të shkurtër
+- ✅ Gjenero 5 pyetje me zgjedhje (multiple choice quiz)
+- ✅ Luaj "Escape Room" me 3 enigma bazuar në tekst
+- ✅ Loading state dhe error handling
+
+## Si të përdoret
+
+1. Ngjisni tekstin tuaj në fushën e madhe
+2. Klikoni butonin "✨ Gjenero"
+3. Shfletoni rezultatet përmes 3 skedave: Summary, Quiz, Escape Room
+
+## Instalimi lokal
+
+```bash
+git clone https://github.com/EriiGerii/projekti-i-4-ui.git
+cd projekti-i-4-ui
+npm install
+npm run dev
